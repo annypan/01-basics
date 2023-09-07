@@ -30,6 +30,8 @@ These import lines must be at the beginning of the file, before any other defini
 module Basics where
 
 -- library imports must come at the beginning of the module
+
+import Data.Bits (Bits (xor))
 import Test.HUnit
   ( Counts,
     Test (TestList),
@@ -80,6 +82,7 @@ set up correctly.)
 -}
 
 -- >>> 3 * (4 + 5)
+-- 27
 
 {-
 This sort of reasoning isn't so surprising so far. We can do the same thing in
@@ -103,6 +106,7 @@ We can ask VSCode to calculate with these names, just as we did above.
 -}
 
 -- >>> ex
+-- 27
 
 {-
 Haskell definitions do not need to be in order. In a definition for one name, we
@@ -116,6 +120,7 @@ ez :: Integer
 ez = ex + 200
 
 -- >>> ey
+-- 254
 
 {-
 Whenever we give a name to an expression, it is a good idea to also write down
@@ -145,12 +150,14 @@ Compare the value of a extra-large `Integer`
 -}
 
 -- >>> bigInteger
+-- 12345678901234567890
 
 {-
 with an `Int`
 -}
 
 -- >>> bigInt
+-- -6101065172474983726
 
 {-
 Above, we declared the type of an expression separately from giving it a
@@ -159,6 +166,7 @@ still annotate it with its type using `::`.
 -}
 
 -- >>> 31 * (42 + 56) :: Integer
+-- 3038
 
 {-
 More generally, the type annotation can be attached to any subexpression, not
@@ -166,6 +174,7 @@ just at the top level.
 -}
 
 -- >>> (31 :: Integer) * (42 + 56)
+-- 3038
 
 {-
 It is good style to annotate the type of *every* declaration in a Haskell
@@ -177,9 +186,9 @@ Elements of Haskell
 
 So far, we have have seen the following three properties of Haskell:
 
-* Haskell code is based on *expressions*
-* Expressions evaluate to *values*
-* Every expression has a *type*, which may influence evaluation
+\* Haskell code is based on *expressions*
+\* Expressions evaluate to *values*
+\* Every expression has a *type*, which may influence evaluation
 
 You are probably familiar with expressions in other programming languages,
 where they are often used to compute numeric and boolean values. Haskell also
@@ -190,12 +199,14 @@ using the same overloaded syntax.
 -}
 
 -- >>> 31 * (42 + 56) :: Double    -- double precision floating point
+-- 3038.0
 
 {-
 Furthermore, you'll also find characters, strings and boolean values.
 -}
 
 -- >>> 'a' :: Char                 -- characters
+-- 'a'
 
 -- >>> "abcd" :: String            -- strings
 
@@ -212,6 +223,7 @@ expressions.
 -}
 
 -- >>> (if ex > 28 then 1 else 0) + 2 :: Int
+-- 2
 
 {-
 Now the last basic type, shown below, is subtle. It is a special constant,
@@ -224,6 +236,7 @@ type `()`, then we know that its value (if it has one) must be equal to `()`.
 -}
 
 -- >>> () :: ()            -- 'unit' (both value and type have the same syntax)
+-- ()
 
 {-
 What is the point of a trivial type? In Haskell, every function is a mathematical function,
@@ -259,12 +272,14 @@ We call functions by providing them with arguments.
 -}
 
 -- >>> pat 31 42 56
+-- 3038
 
 {-
 No parentheses are necessary, unless the argument itself is a compound expression.
 -}
 
 -- >>> pat (30 + 1) 42 56
+-- 3038
 
 {-
 The important question is not "What does this function do?"
@@ -365,6 +380,7 @@ on either side of the operator.
 x >+ y = x + y + 1
 
 -- >>> 2 >+ 3
+-- 6
 
 {-
 Laziness is a virtue
@@ -377,7 +393,7 @@ functions. Instead, expressions are only evaluated when they are needed.
 
 We can observe this behavior in Haskell by seeing what happens when we use
 `error` in a subexpresion. The `error` keyword in Haskell triggers a
-*non-recoverable* runtime exception, aborting any computation in progress.
+\*non-recoverable* runtime exception, aborting any computation in progress.
 It is not a good idea to use `error` in production code, but it is convenient
 for incremental development and for learning about how Haskell evaluation works.
 An `error` can be used in any context and can be given
@@ -389,6 +405,7 @@ error will trigger.
 -}
 
 -- >>> 1 + 2 + 3 + error "Here!"
+-- Here!
 
 {-
 However, we won't trigger an error that is in dead code, such as in
@@ -396,6 +413,7 @@ the non-selected part of an if-expression...
 -}
 
 -- >>> if 1 < 3 then 5 else error "Unreachable"
+-- 5
 
 {-
 ..or that was short-circuited when evaluating a boolean expression.
@@ -409,6 +427,7 @@ it does not short circuit and does trigger the error.
 -}
 
 -- >>> False || error "Ooops!"
+-- Ooops!
 
 {-
 In most languages, `if` and `||` are defined via special constructs because they
@@ -426,6 +445,7 @@ Through laziness, this definition short circuits, just like the Prelude version 
 -}
 
 -- >>> or True (error "Unreachable")
+-- True
 
 {-
 More generally, because Haskell is lazy, the language enables more abstraction.
@@ -450,6 +470,7 @@ Thus:
 -}
 
 -- >>> const (error "Here!") 4
+-- 4
 
 {-
 Laziness is unique to Haskell, and we'll see more examples of it throughout the semester.
@@ -467,10 +488,10 @@ Making Haskell DO something
 
 Programs often interact with the world:
 
-* Read files
-* Display graphics
-* Broadcast packets
-* Run test cases and print success or failure
+\* Read files
+\* Display graphics
+\* Broadcast packets
+\* Run test cases and print success or failure
 
 They don't *just* compute values.
 
@@ -666,10 +687,10 @@ t1 = (1 + 2 :: Int) ~?= 3
 -- check that the result of the computation matches the expected value `3`
 
 {-
-* Haskell is lazy by default, so these definitions *create* tests, but don't
+\* Haskell is lazy by default, so these definitions *create* tests, but don't
 actually run them yet. We'll do that below.
 
-* The `(~?=)` operator is overloaded. You can create tests that compare
+\* The `(~?=)` operator is overloaded. You can create tests that compare
 expressions at many different types. When the expressions themselves are also
 overloaded (such as those with numbers), we run into ambiguity---what type of
 expressions should this test actually use? We resolve that ambiguity with
@@ -734,7 +755,7 @@ tup3 = ((7, 5.2), True)
 There can be any number of elements in a tuple, but the structure must match
 the type.
 
-*Pattern Matching* extracts values from tuples.
+\*Pattern Matching* extracts values from tuples.
 
 A function that takes a tuple as an argument *looks* like it has multiple
 arguments, but in reality, it has just one. We use a *pattern* to name the
@@ -774,11 +795,13 @@ pat4 :: ((Int, Int), Int) -> Int
 pat4 ((a, b), c) = a * (b + c)
 
 -- >>> pat4 tup4
+-- 5
 
 pat5 :: (Int, (Int, Int)) -> Int
 pat5 (a, (b, c)) = a * (b + c)
 
 -- >>> pat5 tup5
+-- 5
 
 pat6 :: (Int, Int, Int) -> Int
 pat6 (a, b, c) = a * (b + c)
@@ -882,13 +905,14 @@ jn (Just Nothing) = Nothing
 jn Nothing = Nothing
 
 {-
-**Quiz**: See if you can come up with a slightly simpler way to write `jn` using two
+\**Quiz**: See if you can come up with a slightly simpler way to write `jn` using two
 patterns instead of three. The `undefined` expression is one that produces a run-time
 error if it is ever evaluated.
 -}
 
 jn' :: Maybe (Maybe a) -> Maybe a
-jn' = undefined
+jn' (Just x) = x
+jn' Nothing = Nothing
 
 {-
 Lists
@@ -907,7 +931,7 @@ l1 :: [Double]
 l1 = [1.0, 2.0, 3.0, 4.0]
 
 l2 :: [Int]
-l2 = undefined -- make a list of numbers
+l2 = [1, 2, 3, 4] -- make a list of numbers
 
 {-
 Lists can contain structured data...
@@ -921,7 +945,7 @@ l3 = [(1, True), (2, False)]
 -}
 
 l4 :: [[Int]]
-l4 = undefined -- make a list of lists
+l4 = [[1, 2, 3], [2, 3, 4]] -- make a list of lists
 
 {-
 List elements *must* have the same type.
@@ -940,7 +964,7 @@ l6 :: [a]
 l6 = []
 
 {-
-*Note*: `String` is just another name for a list of characters (`[Char]`).
+\*Note*: `String` is just another name for a list of characters (`[Char]`).
 -}
 
 l7 :: String
@@ -951,6 +975,7 @@ What is the value of l7?
 -}
 
 -- >>> l7
+-- "hello 5520!"
 --
 
 {-
@@ -980,14 +1005,17 @@ Try evaluating `c1` and `c2`.
 -}
 
 -- >>> c1
+-- [True,False,False]
 --
 -- >>> c2
+-- [1]
 --
 
 {-
 And check out the type of `c3`.
 -}
 
+c3 :: [[a]]
 c3 = [] : []
 
 {-
@@ -1014,8 +1042,10 @@ Try evaluating `s1` and `s2`.
 -}
 
 -- >>> s1
+-- "abc"
 --
 -- >>> s2
+-- "abc"
 --
 
 {-
@@ -1045,10 +1075,10 @@ are the same list.
 Function practice: List Generation
 ----------------------------------
 
-**Example**: Write a function that, given an argument `x` and a number `n`, returns
+\**Example**: Write a function that, given an argument `x` and a number `n`, returns
 a list containing `n` copies of `x`.
 
-**Step 1**: Write test cases for the function.
+\**Step 1**: Write test cases for the function.
 
 We're using HUnit, a library for defining unit tests in Haskell and using the
 `~?=` operator to construct unit `Test`s by comparing the computed result
@@ -1062,7 +1092,7 @@ testClone3 = clone (1.1 :: Double) 3 ~?= [1.1, 1.1, 1.1]
 testClone4 = clone 'a' (-1) ~?= []
 
 {-
-**Step 2**: Declare the type of the function.
+\**Step 2**: Declare the type of the function.
 
 This function replicates any type of value, so the type of the first argument
 is polymorphic.
@@ -1070,15 +1100,15 @@ is polymorphic.
 
 clone :: a -> Int -> [a]
 {-
-**Step 3**: Implement the function.
+\**Step 3**: Implement the function.
 
 We implement this function by recursion on the integer argument.
 -}
 
-clone x n = if n <= 0 then [] else x : clone x (n -1)
+clone x n = if n <= 0 then [] else x : clone x (n - 1)
 
 {-
-**Step 4**: Run the tests.
+\**Step 4**: Run the tests.
 
 The HUnit function `runTestTT` actually runs a given unit test and prints
 its result to the standard output stream. (That is why its result type is `IO
@@ -1108,11 +1138,11 @@ You can run the tests by evaluating the definition `cls` at the ghci prompt.
 Function practice
 -----------------
 
-**Quiz**: Define a function called `range` that, given two integers `i` and `j`,
+\**Quiz**: Define a function called `range` that, given two integers `i` and `j`,
 returns a list containing all of the numbers at least as big as `i` but no
 bigger than `j`, in order.
 
-**Step 1**: Write test cases. We can define multiple test cases at once using a list.
+\**Step 1**: Write test cases. We can define multiple test cases at once using a list.
 -}
 
 testRange :: Test
@@ -1124,18 +1154,18 @@ testRange =
     ]
 
 {-
-**Step 2**: Declare the type of the function.
+\**Step 2**: Declare the type of the function.
 -}
 
 range :: Int -> Int -> [Int]
 {-
-**Step 3**: Define the function. This part is for you to do for your quiz.
+\**Step 3**: Define the function. This part is for you to do for your quiz.
 -}
 
-range i j = undefined
+range i j = if i > j then [] else i : range (i + 1) j
 
 {-
-**Step 4**: Run the tests.
+\**Step 4**: Run the tests.
 -}
 
 runRTests :: IO Counts
@@ -1180,7 +1210,10 @@ lists that have three or more elements.
 -}
 
 isLong :: [a] -> Bool
-isLong = undefined
+isLong [] = False
+isLong [_] = False
+isLong [_, _] = False
+isLong _ = True
 
 testIsLong :: Test
 testIsLong =
@@ -1225,10 +1258,10 @@ isGreeting3 s =
 Function practice: List Recursion
 ------------------------------
 
-**Example*: Define a function called `listSum` that, given a list of `Int`s returns
+\**Example*: Define a function called `listSum` that, given a list of `Int`s returns
 their sum.
 
-**Step 1**: Write test cases.
+\**Step 1**: Write test cases.
 -}
 
 sumTests :: Test
@@ -1239,12 +1272,12 @@ sumTests =
     ]
 
 {-
-**Step 2**: Declare the type of the function.
+\**Step 2**: Declare the type of the function.
 -}
 
 sum :: [Int] -> Int
 {-
-**Step 3**: Define the function. (Use pattern matching to define the function by
+\**Step 3**: Define the function. (Use pattern matching to define the function by
 case analysis.)
 -}
 
@@ -1252,7 +1285,7 @@ sum [] = 0
 sum (x : xs) = x + sum xs
 
 {-
-**Step 4**: Run the tests.
+\**Step 4**: Run the tests.
 -}
 
 runSumTests :: IO Counts
@@ -1283,7 +1316,7 @@ Define a function, called `take`, that, given a number n and a list,
 returns the first n items in the list, or the whole list if there are
 fewer than n items.
 
-**Step 1**: Write test cases.
+\**Step 1**: Write test cases.
 -}
 
 takeTests :: Test
@@ -1294,13 +1327,13 @@ takeTests =
     ]
 
 {-
-**Step 2**: Declare the type of the function. This function
+\**Step 2**: Declare the type of the function. This function
 is polymorphic and works with any element type.
 -}
 
 take :: Int -> [a] -> [a]
 {-
-**Step 3**: Define the function.
+\**Step 3**: Define the function.
 -}
 
 take 0 xs = []
@@ -1308,7 +1341,7 @@ take n [] = []
 take n (x : xs) = x : take (n - 1) xs
 
 {-
-**Step 4**: Run the tests.
+\**Step 4**: Run the tests.
 -}
 
 runTakeTests :: IO Counts
@@ -1321,7 +1354,7 @@ Function practice: List transformation
 Define a function, called `listIncr`, that, given a list of ints,
 returns a new list where each number has been incremented.
 
-**Step 1**: Write test cases.
+\**Step 1**: Write test cases.
 -}
 
 listIncrTests :: Test
@@ -1332,18 +1365,19 @@ listIncrTests =
     ]
 
 {-
-**Step 2**: Declare the type of the function.
+\**Step 2**: Declare the type of the function.
 -}
 
 listIncr :: [Int] -> [Int]
 {-
-**Step 3**: Define the function.
+\**Step 3**: Define the function.
 -}
 
-listIncr = undefined
+listIncr [] = []
+listIncr (x : xs) = (x + 1) : listIncr xs
 
 {-
-**Step 4**: Run the tests.
+\**Step 4**: Run the tests.
 -}
 
 runLITests :: IO Counts
@@ -1356,7 +1390,7 @@ Function practice: Double List transformation
 Define a function, called `listAdd`, that, given two lists of
 numbers, adds them together pointwise. Any extra numbers are ignored.
 
-**Step 1**: Write test cases.
+\**Step 1**: Write test cases.
 -}
 
 listAddTests :: Test
@@ -1367,18 +1401,20 @@ listAddTests =
     ]
 
 {-
-**Step 2**: Declare the type of the function.
+\**Step 2**: Declare the type of the function.
 -}
 
 listAdd :: [Int] -> [Int] -> [Int]
 {-
-**Step 3**: Define the function.
+\**Step 3**: Define the function.
 -}
 
-listAdd = undefined
+listAdd _ [] = []
+listAdd [] _ = []
+listAdd (x : xs) (y : ys) = (x + y) : listAdd xs ys
 
 {-
-**Step 4**: Run the tests.
+\**Step 4**: Run the tests.
 -}
 
 runLAddTests :: IO Counts
@@ -1427,6 +1463,7 @@ allNums :: [Int]
 allNums = 1 : listIncr allNums
 
 -- >>> take 17 allNums
+-- [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17]
 
 {-
 And we can define the Fibonacci series. (The `tail` function below
